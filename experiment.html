@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Classification Experiment</title>
+	<script src="https://unpkg.com/jspsych@8.2.2"></script>
+	<script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+	<link href="https://unpkg.com/jspsych@8.2.2/css/jspsych.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <script>
+	
+	const jsPsych = initJsPsych({
+	on_finish: function() {
+    window.location.href = "Projects.html"; 
+	}
+	});
+	
+	const n_trials = 10;
+	
+	function makeTrial() {
+	  const words = ['BLUE', 'RED'];
+	  const colors = ['blue', 'red'];
+
+	 const word = jsPsych.randomization.sampleWithoutReplacement(words, 1)[0];
+	 const color = jsPsych.randomization.sampleWithoutReplacement(colors, 1)[0];
+
+	 return {
+     type: jsPsychHtmlKeyboardResponse,
+     stimulus: `<p style="color:${color}; font-size:48px;">${word}</p>`,
+     choices: ['f', 'j'],
+     prompt: "<p>Is the font color red (f) or blue (j)?</p>",
+     };
+}
+    const fixation = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: '<p style="font-size:48px;">+</p>',
+      choices: "NO_KEYS",
+      trial_duration: 500,
+    };
+	
+	 const trials = [];
+	 for (let i = 0; i < n_trials; i++) {
+     trials.push(fixation,makeTrial());
+}
+	const timeline = [];
+	
+	var intro = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '<p style="font-size:24px; color:black;">Welcome to the experiment. During this task, you will need to decide if the font color of a word is red or blue. </p><p style="font-size:24px; color:black;">If the font color is red, press the F key. If the font color is blue, press the J key.</p>',
+    choices: ['Enter'],
+    prompt: "<p>Press the enter key to continue.</p>"
+};
+	timeline.push(intro);
+
+    timeline.push(...trials);
+
+	var outro = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: '<p style="font-size:24px; color:black;">Thank you for your participation. This concludes the experiment.</p>',
+    choices: ['q'],
+    prompt: "<p>Press the 'Q' key to exit.</p>"
+};
+	timeline.push(outro);
+
+ jsPsych.run(timeline);
+ 
+	</script>
+	</body>
+</html>
