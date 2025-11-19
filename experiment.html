@@ -192,8 +192,9 @@ const trials2 = [];
 	var outro = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: `<p style="font-size:24px; color:black;">Thank you for your participation. This concludes the experiment.</p>`,
-    choices: ['q'],
-    prompt: `<p>Press the 'Q' key to exit.</p>`
+    choices: "NO_KEYS",
+	trial_duration: 3000,
+    prompt: `<p>The experiment will close in 3 seconds.</p>`
 };
 
 
@@ -209,4 +210,5 @@ jsPsych.run(timeline);
 
 </script>
 </html>
+
 
