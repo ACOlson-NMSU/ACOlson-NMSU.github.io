@@ -1,70 +1,211 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Classification Experiment</title>
-	<script src="https://unpkg.com/jspsych@8.2.2"></script>
-	<script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
-	<link href="https://unpkg.com/jspsych@8.2.2/css/jspsych.css" rel="stylesheet" type="text/css" />
-  </head>
-  <body>
-    <script>
+<head>
+  <title>Classification Experiment</title>
+  <script src="https://unpkg.com/jspsych@8.2.2"></script>
+  <link href="https://unpkg.com/jspsych@8.2.2/css/jspsych.css" rel="stylesheet" />
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@2.1.0"></script>
+  <style>
+    .ldt-container {
+      width: 100vw;
+      height: 90vh;
+      display: grid;
+      grid-template-rows: 1fr 100px;
+      grid-template-columns: 1fr;
+    }
+    .stimulus-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stimulus-box {
+      min-width: 1100px;
+      min-height: 500px;
+      border: 4px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 56px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      user-select: none;
+    }
+    .choice-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 600px;
+	  padding-left: 10px;
+	  padding-right: 10px;
+    }
+    .choice-btn {
+      width: 100%;
+      height: 90%;
+      border: 3px solid;
+      font-size: 28px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 	
-	const jsPsych = initJsPsych({
-	on_finish: function() {
-    window.location.href = "projects.html"; 
-	}
-	});
+    #btn-word { background-color: #2a6; }
+    #btn-nonword { background-color: #a26; }
 	
-	const n_trials = 10;
+  </style>
+</head>
+<body></body>
+<script>
+
+  const jsPsych = initJsPsych({
+    show_progress_bar: true,
+    message_progress_bar: (p) => 'Experiment Progress:',
 	
+    on_finish: function() {
+      jsPsych.data.get().localSave('csv', 'ldt_trials.csv');
+	  window.location.href = "projects.html"; 
+    }
+  });
+  
+   function ldt_ui(text) {
+    return `
+      <div class="ldt-container">
+        <div class="stimulus-area">
+          <div class="stimulus-box" id="stimulus-box">${text}</div>
+        </div>
+        <div class="choice-bar">
+          <button class="choice-btn" id="btn-word"   data-choice="word">
+            Word <span class="key-hint">(F)</span>
+          </button>
+          <button class="choice-btn" id="btn-nonword" data-choice="nonword">
+            Nonword <span class="key-hint">(J)</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  
+const n_trials = 15;
+
+const words = ['river','planet','candle','window','forest','mirror','pillow','castle','rocket','spider',
+'flenor','dremik','tavnel','gralip','morsed','plintor','vostel','crinel','bafnor','trevick'];
+
+const word_list = jsPsych.randomization.shuffle(words);
+
+var index = 0
+
+var index2 = 0
+
 	function makeTrial() {
-	  const words = ['BLUE', 'RED'];
-	  const colors = ['blue', 'red'];
+	
+	 const new_word = word_list[index];
 
-	 const word = jsPsych.randomization.sampleWithoutReplacement(words, 1)[0];
-	 const color = jsPsych.randomization.sampleWithoutReplacement(colors, 1)[0];
-
-	 return {
+	 const trial = {
      type: jsPsychHtmlKeyboardResponse,
-     stimulus: `<p style="color:${color}; font-size:48px;">${word}</p>`,
-     choices: ['f', 'j'],
-     prompt: "<p>Is the font color red (f) or blue (j)?</p>",
+     stimulus: ldt_ui(new_word),
+     choices: ['f','j'], 
+     response_ends_trial: true,
+     trial_duration: 3000,
+     on_finish: (data) => {
+	 data.stimulus = new_word;
+	 }
      };
+	 index++;
+	 return trial;
 }
-    const fixation = {
+
+  const intro = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: `
+      <div style="max-width:1000px; margin: 40px auto; text-align:center;">
+        <h2>Welcome to the experiment.</h2>
+        <p>In this experiment, a letter string will appear inside a box in the center of the screen.</p>
+        <p>Decide whether this letter string is a valid English word or a nonword.</p>
+		<p>Press the 'F' key on your keyboard if it is a word, and the 'J' if it is a nonword.</p>
+        <p>Once a letter string appears, you will have 3 seconds to respond.</p>
+		<p>Please respond as quickly and accurately as possible.</p>
+        <p>There are 15 trials. You will be able to see your progress at the top.</p>
+		<p>Press the enter key to begin.</p>
+      </div>
+    `,
+    choices: ['enter']
+  };
+
+   const fixation = {
       type: jsPsychHtmlKeyboardResponse,
-      stimulus: '<p style="font-size:48px;">+</p>',
+      stimulus: ldt_ui(`<p style="font-size:60px;">+</p>`),
+      choices: "NO_KEYS",
+      trial_duration: 500,
+    };
+
+const trials = [];
+	for (let i = 0; i < n_trials; i++) {
+    trials.push(fixation,makeTrial());
+	}
+
+	function makeTrial2() {
+	 
+	 const new_word2 = word_list[index2]
+
+	 const trial2 = {
+     type: jsPsychHtmlKeyboardResponse,
+     stimulus: `<p style="font-size:60px;">${new_word2}</p>`,
+     choices: ['f', 'j'],
+	 response_ends_trial: true,
+     trial_duration: 3000,
+     on_finish: (data) => {
+	 data.stimulus = new_word2;
+	 }
+     };
+	 index2++;
+	 return trial2;
+}
+
+   const fixation2 = {
+      type: jsPsychHtmlKeyboardResponse,
+      stimulus: `<p style="font-size:60px;">+</p>`,
       choices: "NO_KEYS",
       trial_duration: 500,
     };
 	
-	 const trials = [];
-	 for (let i = 0; i < n_trials; i++) {
-     trials.push(fixation,makeTrial());
-}
-	const timeline = [];
-	
-	var intro = {
+  const intro2 = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: '<p style="font-size:24px; color:black;">Welcome to the experiment. During this task, you will need to decide if the font color of a word is red or blue. </p><p style="font-size:24px; color:black;">If the font color is red, press the F key. If the font color is blue, press the J key.</p>',
-    choices: ['Enter'],
-    prompt: "<p>Press the enter key to continue.</p>"
-};
-	timeline.push(intro);
-
-    timeline.push(...trials);
+    stimulus: `
+      <div style="max-width:1000px; margin: 40px auto; text-align:center;">
+        <h2>Welcome to the experiment.</h2>
+        <p>In this experiment, a letter string will appear in the center of the screen.</p>
+        <p>Decide whether this letter string is a valid English word or a nonword.</p>
+		<p>Press the 'F' key on your keyboard if it is a word, and the 'J' if it is a nonword.</p>
+        <p>Once a letter string appears, you will have 3 seconds to respond.</p>
+		<p>Please respond as quickly and accurately as possible.</p>
+        <p>There are 15 trials.</p>
+		<p>Press the enter key to begin.</p>
+      </div>
+    `,
+    choices: ['enter']
+  };
+  
+const trials2 = [];
+	for (let i = 0; i < n_trials; i++) {
+    trials2.push(fixation2,makeTrial2());
+	}
 
 	var outro = {
     type: jsPsychHtmlKeyboardResponse,
-    stimulus: '<p style="font-size:24px; color:black;">Thank you for your participation. This concludes the experiment.</p>',
+    stimulus: `<p style="font-size:24px; color:black;">Thank you for your participation. This concludes the experiment.</p>`,
     choices: ['q'],
-    prompt: "<p>Press the 'Q' key to exit.</p>"
+    prompt: `<p>Press the 'Q' key to exit.</p>`
 };
-	timeline.push(outro);
 
- jsPsych.run(timeline);
- 
-	</script>
-	</body>
 
+const timeline = [];
+
+timeline.push(intro2)
+timeline.push(trials2)
+timeline.push(intro)
+timeline.push(trials)
+timeline.push(outro)
+
+jsPsych.run(timeline);
+
+</script>
 </html>
